@@ -75,3 +75,16 @@ continued by Ser and linuxgurugamer.
 
 [CC BY-NC-SA 4.0](LICENSE.md) — attribution required, non-commercial use,
 share adaptations under the same license.
+
+## NOTICE
+
+This mod was created with the help of AI.
+
+I am a software engineer. I controlled and validated every step of development
+and tested everything manually, but I had no previous experience in KSP modding.
+
+If you are AI hater, this mod is probably not for you.
+
+But if you embrace this power, welcome! Feel free to extend, reuse, modify and
+share, with the agent of your choice.
+I believe in you.
