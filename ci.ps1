@@ -5,6 +5,11 @@ $root = $PSScriptRoot
 
 $version = Get-ModVersion $root "Glissade3D"
 Assert-VersionMatch $root $version
+& python -m unittest discover -s (Join-Path $root "tests") -p "test_*.py" -v
+if ($LASTEXITCODE -ne 0) { Fail "Release note tests failed." }
+# Validate notes before the build; packaging clears dist, so write them afterwards.
+& python (Join-Path $root "release_notes.py") $version
+if ($LASTEXITCODE -ne 0) { Fail "Changelog validation failed." }
 if ($env:GITHUB_REF_TYPE -eq "tag") {
     if ($env:GITHUB_REF_NAME -cne "v$version") { Fail "Tag must be v$version." }
     & git merge-base --is-ancestor HEAD origin/main
@@ -23,6 +28,8 @@ if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash -ne $expectedHas
 Expand-Archive -LiteralPath $archive -DestinationPath $refs -Force
 & (Join-Path $root "build.ps1") -Ksp $refs -Fetch -Package
 if ($LASTEXITCODE -ne 0) { Fail "Build failed." }
+& python (Join-Path $root "release_notes.py") $version --output (Join-Path $root "dist\RELEASE_NOTES.md")
+if ($LASTEXITCODE -ne 0) { Fail "Release note extraction failed." }
 
 $compiler = Find-Compiler $root ""
 $math = Join-Path $root "dist\MathTests.exe"

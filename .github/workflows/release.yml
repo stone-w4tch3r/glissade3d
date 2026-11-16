@@ -23,7 +23,9 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Glissade3D
-          path: dist/Glissade3D-*.zip
+          path: |
+            dist/Glissade3D-*.zip
+            dist/RELEASE_NOTES.md
           if-no-files-found: error
 
   release:
@@ -47,4 +49,5 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: >-
           gh release create "$RELEASE_TAG" dist/*.zip
-          --verify-tag --title "Glissade3D $RELEASE_TAG" --generate-notes
+          --verify-tag --title "Glissade3D $RELEASE_TAG"
+          --notes-file dist/RELEASE_NOTES.md

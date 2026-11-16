@@ -66,6 +66,7 @@ Settings live in `PluginData/Glissade3D/settings.cfg`.
 ## Build
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for build, test and install steps.
+See [CHANGELOG.md](CHANGELOG.md) for release changes.
 
 ## Credits & license
 
