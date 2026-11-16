@@ -49,7 +49,7 @@ try {
     $expected += @(Get-ChildItem -LiteralPath (Join-Path $root "GameData\Glissade3D") -File | ForEach-Object {
         "GameData/Glissade3D/$($_.Name)"
     })
-    $files = @($zip.Entries | Where-Object { $_.Name } | ForEach-Object { $_.FullName.Replace('\', '/') })
+    $files = @($zip.Entries | Where-Object { $_.Name } | ForEach-Object { $_.FullName })
     if (Compare-Object $expected $files) { Fail "ZIP file list does not match the release layout." }
     foreach ($entry in $zip.Entries) {
         if ($entry.Name -and $entry.Length -eq 0) { Fail "Empty release file: $($entry.FullName)" }

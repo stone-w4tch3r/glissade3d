@@ -68,6 +68,18 @@ Write-Host "Built: $dll ($size bytes)"
 
 if ($Package) {
     $zip = Join-Path $dist "$mod-$version.zip"
-    Compress-Archive -Path (Join-Path $dist "GameData") -DestinationPath $zip -Force
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [IO.Compression.ZipFile]::Open($zip, [IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach ($file in Get-ChildItem -LiteralPath (Join-Path $dist "GameData") -File -Recurse) {
+            # PowerShell 5.1 Compress-Archive can write Windows-only backslash paths.
+            $name = $file.FullName.Substring($dist.Length + 1).Replace('\', '/')
+            [IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+                $archive, $file.FullName, $name, [IO.Compression.CompressionLevel]::Optimal
+            ) | Out-Null
+        }
+    } finally {
+        $archive.Dispose()
+    }
     Write-Host "Package: $zip"
 }
