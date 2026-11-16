@@ -34,6 +34,7 @@ New-Item -ItemType Directory -Force -Path $plugins | Out-Null
 Get-ChildItem -LiteralPath (Join-Path $root "GameData\$mod") -File | ForEach-Object {
     Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $ship $_.Name) -Force
 }
+Copy-Item -LiteralPath (Join-Path $root "LICENSE.md") -Destination (Join-Path $ship "LICENSE.md")
 
 $references = @(
     "mscorlib.dll",

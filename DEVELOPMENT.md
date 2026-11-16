@@ -100,6 +100,36 @@ powershell -NoProfile -ExecutionPolicy Bypass -File build.ps1 -Package
 The script writes `dist\Glissade3D-<version>.zip`.
 The ZIP contains the `GameData` folder.
 
+## Automated builds and releases
+
+Maintain `.github/workflows/release.yml` and `ci.ps1` in the private mod folder.
+The KSP synchronization script copies them into the public repository.
+
+Each push to public `main` builds a ZIP and uploads it as the `Glissade3D`
+Actions artifact. You can also select **Run workflow** on the Actions page.
+These runs do not publish a release.
+
+CI uses Windows Server 2022, Roslyn 4.14.0 and pinned, checksum-verified
+[KSP 1.12.5 reference assemblies](https://github.com/KSPModdingLibs/KSPLibs).
+It compiles the mod, runs pure math tests against real .NET Framework, checks
+the assembly version and verifies the ZIP file list and non-empty files.
+Reference assemblies contain no game method bodies: run the full `test.ps1`
+suite and flight checks locally with your installed KSP.
+
+To publish a release, sync the tested source and push an annotated `v<version>`
+tag on the public commit. The tag must match both version files. The tagged
+commit must belong to public `main`. Successful tag builds publish the ZIP
+directly as a GitHub release, with generated release notes. No draft step is
+required. Manual runs never publish, even when you select a tag.
+
+The private KSP repository provides `release-glissade3d.sh` for this step.
+It checks that the public commit exactly matches the committed private mod.
+It does not transfer private tags or private history. Use a new version for
+each release; do not move published tags or replace published ZIPs.
+
+Check the first CI-built ZIP in KSP once. Repeat this check when compiler,
+references or packaging change. Normal gameplay checks remain local.
+
 ## Rules
 
 - Do not commit `dist`.
