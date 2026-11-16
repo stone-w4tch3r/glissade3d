@@ -119,15 +119,42 @@ commit must belong to public `main`. Successful tag builds publish the ZIP
 directly as a GitHub release, with the matching section from `CHANGELOG.md`.
 Manual runs never publish, even when you select a tag.
 
-See [CHANGELOG-GUIDE.md](CHANGELOG-GUIDE.md) for writing entries, finalizing
-versions, checking notes and publishing. CI validates and extracts the notes
-on every build. Release-note extraction tests run alongside the build checks.
-
 Use a new version for each release; do not move published tags or replace
 published ZIPs.
 
 Check the first CI-built ZIP in KSP once. Repeat this check when compiler,
 references or packaging change. Normal gameplay checks remain local.
+
+## Maintain the changelog
+
+Edit [CHANGELOG.md](CHANGELOG.md) by hand using
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Describe player-visible
+changes. Keep four-part versions.
+
+Add bullets under `## [Unreleased]`. Use Added, Changed,
+Deprecated, Removed, Fixed or Security subheadings; omit empty categories.
+
+Release:
+
+1. Test locally. Move pending bullets under `## [VERSION] - YYYY-MM-DD`,
+   newest release first. Leave an empty Unreleased section above it.
+2. Match the version in `Glissade3D.version` and `AssemblyInfo.cs`.
+3. From the mod folder, substitute your version:
+
+   ```powershell
+   .\release-notes.ps1 -Version v0.3.4.0
+   .\tests\ReleaseNotesTests.ps1
+   ```
+
+   Use Windows PowerShell 5.1 or PowerShell 7. On macOS, run scripts with
+   `pwsh -NoProfile -File ./release-notes.ps1 -Version v0.3.4.0`.
+
+The helper and CI reject missing, duplicate, undated or empty release sections.
+Branch builds preview Unreleased entries. CI uploads `RELEASE_NOTES.md` beside
+the ZIP; tag releases publish only their matching section from the built commit.
+
+For wording corrections, commit the corrected changelog and update the existing
+GitHub release body. Keep its tag and ZIP unchanged.
 
 ## Rules
 
