@@ -39,24 +39,30 @@ Double-click a trajectory in the list, or press **Edit**, to change one of your 
 - **Advanced** — gate range, spacing, entry size, pinch size and taper length.
 - **Pause** freezes the world so you can look around.
 
-Trajectories live in `PluginData/Glissade3D/routes/`, one file per trajectory.
+Trajectories live in `PluginData/Glissade3D/routes/`.
 
-## Sharing Trajectories
+## Shared Trajectories
 
-Ready-made trajectories are in [shared/](shared/README.md). To share one, copy your
-trajectory file from `PluginData/Glissade3D/routes/` into
-`shared/<kebab-case-name>/<trajectory-name>.cfg`, add a small README and an optional
-screenshot, and open a pull request.
+Ready-made trajectories are in [shared/](shared/README.md).
 
-## Install Shared Trajectories From Github
+Use **Install shared trajectories** under **Advanced** to downloads the published catalog
+from github automatically.
 
-Under **Advanced**, **Install shared trajectories** downloads the published catalog
-from github; they are marked `↓` in the list.
+To share one, see the doc above.
 
 ## Install & compatibility
 
-Copy `GameData/Glissade3D` into your KSP installation's `GameData` folder, then
-restart the game.
+1. Download `Glissade3D-<version>.zip` from **Assets** on the
+   [latest release](https://github.com/stone-w4tch3r/glissade3d/releases/latest).
+   The **Source code** archives are for developers, not installation.
+2. Close KSP and extract the ZIP.
+3. Copy the extracted `GameData/Glissade3D` folder into your KSP installation's
+   `GameData` folder. The DLL must be at
+   `GameData/Glissade3D/Plugins/Glissade3D.dll`.
+4. Start KSP. Open Glissade3D from the toolbar in flight.
+
+For updates, replace only `GameData/Glissade3D`. Keep
+`PluginData/Glissade3D`: it contains your settings and saved trajectories.
 
 - **KSP 1.12.5.** Other versions are unverified.
 - **No dependencies.** NavUtilities is an optional companion.
