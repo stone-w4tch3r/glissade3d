@@ -87,4 +87,5 @@ If you are AI hater, this mod is probably not for you.
 
 But if you embrace this power, welcome! Feel free to extend, reuse, modify and
 share, with the agent of your choice.
+
 I believe in you.
