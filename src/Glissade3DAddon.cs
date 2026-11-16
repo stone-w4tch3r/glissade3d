@@ -789,14 +789,17 @@ public sealed class Glissade3DAddon : MonoBehaviour
         _confirmDelete = false;
 
         var route = RouteStore.Find(_bodyRoutes, id);
+        Debug.Log($"[Glissade3D] delete route: id={id} found={route != null} builtIn={route != null && route.BuiltIn}");
         Dbg.Line($"delete route: {route?.Id} builtIn={route?.BuiltIn}");
         if (route == null || route.BuiltIn) return;
         if (!RouteLibrary.DeleteUser(route.Id, out var error))
         {
+            Debug.LogWarning($"[Glissade3D] delete failed: {error}");
             _errorText = Loc.Get("save_failed") + ": " + error;
             return;
         }
 
+        Debug.Log($"[Glissade3D] route deleted: {id}");
         if (_settings.ActiveRouteId == id)
         {
             _settings.ActiveRouteId = "";
@@ -1144,6 +1147,13 @@ public sealed class Glissade3DAddon : MonoBehaviour
         }
 
         DrawWorldLabels();
+
+        if (string.IsNullOrEmpty(GUI.tooltip) || Event.current == null) return;
+        var mouse = Event.current.mousePosition;
+        var tooltip = new Rect(mouse.x + 14f, mouse.y + 14f, 240f, 24f);
+        if (tooltip.xMax > Screen.width) tooltip.x = Screen.width - tooltip.width - 4f;
+        if (tooltip.yMax > Screen.height) tooltip.y = mouse.y - tooltip.height - 6f;
+        GUI.Label(tooltip, GUI.tooltip, GUI.skin.box);
     }
 
     private void DrawMainWindow(int id)
@@ -1176,7 +1186,7 @@ public sealed class Glissade3DAddon : MonoBehaviour
             if (!Matches(candidate, _search)) continue;
             var selected = candidate.Id == _settings.ActiveRouteId;
             var distance = _routeDistance.TryGetValue(candidate.Id, out var cached) ? cached : 0.0;
-            var label = $"{(selected ? "> " : "   ")}{candidate.DisplayName}  {candidate.HeadingDeg:0.#}°  {distance / 1000.0:0.0} km{(_sharedState.Contains(candidate.Id) ? "  [S]" : "")}{(candidate.BuiltIn ? "  *" : "")}";
+            var label = $"{(selected ? "> " : "   ")}{candidate.DisplayName}  {candidate.HeadingDeg:0.#}°  {distance / 1000.0:0.0} km{(_sharedState.Contains(candidate.Id) ? "  \u2193" : "")}{(candidate.BuiltIn ? "  *" : "")}";
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(label))
@@ -1186,16 +1196,29 @@ public sealed class Glissade3DAddon : MonoBehaviour
             }
 
             GUI.enabled = !candidate.BuiltIn;
-            if (GUILayout.Button(Loc.Get("edit_short"), GUILayout.Width(64f))) OpenEditor(candidate, false);
-            GUI.enabled = true;
-
-            if (GUILayout.Button(Loc.Get("dup_short"), GUILayout.Width(64f))) DuplicateRoute(candidate);
-
-            GUI.enabled = !candidate.BuiltIn;
-            if (GUILayout.Button(Loc.Get("del_short"), GUILayout.Width(56f)))
+            if (_confirmDelete && _pendingDeleteId == candidate.Id)
             {
-                _pendingDeleteId = candidate.Id;
-                _confirmDelete = true;
+                if (GUILayout.Button(Loc.Get("delete"), GUILayout.Width(80f))) DeletePending();
+                if (GUILayout.Button(Loc.Get("cancel"), GUILayout.Width(80f)))
+                {
+                    _confirmDelete = false;
+                    _pendingDeleteId = "";
+                }
+            }
+            else
+            {
+                if (GUILayout.Button(new GUIContent(UiIcons.Edit, Loc.Get("edit")), GUILayout.Width(30f), GUILayout.Height(22f))) OpenEditor(candidate, false);
+                GUI.enabled = true;
+
+                if (GUILayout.Button(new GUIContent(UiIcons.Copy, Loc.Get("dup")), GUILayout.Width(30f), GUILayout.Height(22f))) DuplicateRoute(candidate);
+
+                GUI.enabled = !candidate.BuiltIn;
+                if (GUILayout.Button(new GUIContent(UiIcons.Delete, Loc.Get("delete")), GUILayout.Width(30f), GUILayout.Height(22f)))
+                {
+                    _pendingDeleteId = candidate.Id;
+                    _confirmDelete = true;
+                    Debug.Log($"[Glissade3D] delete requested: {candidate.Id}");
+                }
             }
             GUI.enabled = true;
             GUILayout.EndHorizontal();
@@ -1294,20 +1317,6 @@ public sealed class Glissade3DAddon : MonoBehaviour
         GUILayout.Label(_readout);
 
         if (route != null && route.BuiltIn) GUILayout.Label(Loc.Get("duplicate_to_edit"));
-
-        if (_confirmDelete)
-        {
-            var pending = RouteStore.Find(_bodyRoutes, _pendingDeleteId);
-            GUILayout.BeginHorizontal();
-            GUILayout.Label($"{Loc.Get("delete_confirm")} {pending?.DisplayName}");
-            if (GUILayout.Button(Loc.Get("delete"))) DeletePending();
-            if (GUILayout.Button(Loc.Get("cancel")))
-            {
-                _confirmDelete = false;
-                _pendingDeleteId = "";
-            }
-            GUILayout.EndHorizontal();
-        }
 
         if (_toast.Length > 0 && Time.unscaledTime < _toastUntil) GUILayout.Label(_toast);
         if (_errorText.Length > 0) GUILayout.Label(_errorText);

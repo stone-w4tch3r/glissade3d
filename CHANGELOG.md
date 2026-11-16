@@ -5,9 +5,21 @@ Versions use the mod's existing four-part numbering.
 
 ## [Unreleased]
 
+## [0.3.5.0] - 2026-11-17
+
 ### Added
 
-- Install shared routes from the mod. Uninstall keeps edited routes; matching local IDs are skipped.
+- Use Lucide for icons.
+
+### Fixed
+
+- Delete not working.
+
+## [0.3.4.0] - 2026-11-17
+
+### Added
+
+- Install shared routes from the mod github.
 
 ## [0.3.3.0] - 2026-11-17
 

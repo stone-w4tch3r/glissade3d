@@ -50,9 +50,10 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zipPath = Join-Path $root "dist\Glissade3D-$version.zip"
 $zip = [IO.Compression.ZipFile]::OpenRead($zipPath)
 try {
-    $expected = @("GameData/Glissade3D/Plugins/Glissade3D.dll", "GameData/Glissade3D/LICENSE.md")
-    $expected += @(Get-ChildItem -LiteralPath (Join-Path $root "GameData\Glissade3D") -File | ForEach-Object {
-        "GameData/Glissade3D/$($_.Name)"
+    $gameData = Join-Path $root "GameData\Glissade3D"
+    $expected = @("GameData/Glissade3D/LICENSE.md")
+    $expected += @(Get-ChildItem -LiteralPath $gameData -File -Recurse | ForEach-Object {
+        "GameData/Glissade3D/" + $_.FullName.Substring($gameData.Length + 1).Replace('\', '/')
     })
     $files = @($zip.Entries | Where-Object { $_.Name } | ForEach-Object { $_.FullName })
     if (Compare-Object $expected $files) { Fail "ZIP file list does not match the release layout." }

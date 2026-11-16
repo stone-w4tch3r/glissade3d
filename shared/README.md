@@ -10,10 +10,16 @@ Approach routes made by Glissade3D users.
 
 ## Install a shared route
 
+## Recommended
+
+Install via **Install shared routes** button under **Advanced**
+
+
+# Manual
+
 1. Copy the route's `.cfg` file into `PluginData/Glissade3D/routes/`.
 2. Start KSP, or press **Read routes from disk** under **Advanced** in the mod.
 3. The route appears in the list for its body.
-
 
 ## Share your own
 
@@ -30,4 +36,6 @@ One route per folder, no changes to other people's folders.
 
 Regenerate `index.cfg` after changing a route file, then commit both:
 
-    powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-shared-index.ps1
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-shared-index.ps1
+```

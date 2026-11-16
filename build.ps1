@@ -34,6 +34,10 @@ New-Item -ItemType Directory -Force -Path $plugins | Out-Null
 Get-ChildItem -LiteralPath (Join-Path $root "GameData\$mod") -File | ForEach-Object {
     Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $ship $_.Name) -Force
 }
+$icons = Join-Path $root "GameData\$mod\Icons"
+if (Test-Path -LiteralPath $icons) {
+    Copy-Item -LiteralPath $icons -Destination $ship -Recurse -Force
+}
 Copy-Item -LiteralPath (Join-Path $root "LICENSE.md") -Destination (Join-Path $ship "LICENSE.md")
 
 $references = @(
@@ -50,7 +54,8 @@ $references = @(
     "UnityEngine.AnimationModule.dll",
     "UnityEngine.PhysicsModule.dll",
     "UnityEngine.TextRenderingModule.dll",
-    "UnityEngine.UnityWebRequestModule.dll"
+    "UnityEngine.UnityWebRequestModule.dll",
+    "UnityEngine.ImageConversionModule.dll"
 )
 
 $refArgs = foreach ($name in $references) { "/reference:`"$(Join-Path $managed $name)`"" }

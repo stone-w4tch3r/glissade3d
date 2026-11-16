@@ -48,14 +48,10 @@ route file from `PluginData/Glissade3D/routes/` into
 `shared/<kebab-case-name>/<route-name>.cfg`, add a small README and an optional
 screenshot, and open a pull request.
 
-## Shared routes
+## Install Shared Routes From Github
 
 Under **Advanced**, **Install shared routes** downloads the published catalog
-and adds its routes; they are marked `[S]` in the list. **Uninstall shared
-routes** removes only routes that are still exactly as installed — edited routes
-are kept. A route whose id already belongs to one of yours is skipped. The
-catalog URL is `sharedBaseUrl` in `PluginData/Glissade3D/settings.cfg`,
-percent-encoded (`ConfigNode` treats `//` as a comment).
+from github; they are marked `↓` in the list.
 
 ## Install & compatibility
 
@@ -82,6 +78,9 @@ See [CHANGELOG.md](CHANGELOG.md) for release changes.
 Stock runway coordinates come from the original
 [NavUtilities](https://github.com/linuxgurugamer/NavInstruments) mod by kujuman,
 continued by Ser and linuxgurugamer.
+
+Icons: [Lucide](https://lucide.dev), ISC license — see
+`GameData/Glissade3D/Icons/LICENSE.txt`.
 
 [CC BY-NC-SA 4.0](LICENSE.md) — attribution required, non-commercial use,
 share adaptations under the same license.
