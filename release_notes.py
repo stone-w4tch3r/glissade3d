@@ -8,8 +8,8 @@ import re
 
 def release_notes(text, version):
     version = version[1:] if version.startswith("v") else version
-    if not re.fullmatch(r"\d+\.\d+\.\d+\.\d+", version):
-        raise ValueError("Expected a four-part release version, optionally prefixed with v.")
+    if version != "Unreleased" and not re.fullmatch(r"\d+\.\d+\.\d+\.\d+", version):
+        raise ValueError("Expected Unreleased or a four-part release version, optionally prefixed with v.")
     headings = list(re.finditer(r"^## .*$", text, re.MULTILINE))
     matches = []
     for index, heading in enumerate(headings):
@@ -20,6 +20,8 @@ def release_notes(text, version):
     if len(matches) != 1:
         raise ValueError(f"Expected exactly one changelog section for {version}; found {len(matches)}.")
     released, body = matches[0]
+    if version == "Unreleased":
+        return body + "\n" if body else ""
     try:
         if date.fromisoformat(released).isoformat() != released:
             raise ValueError()

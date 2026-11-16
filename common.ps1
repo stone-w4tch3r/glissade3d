@@ -27,7 +27,8 @@ function Get-ManagedPath([string]$Ksp) {
         "UnityEngine.InputLegacyModule.dll",
         "UnityEngine.AnimationModule.dll",
         "UnityEngine.PhysicsModule.dll",
-        "UnityEngine.TextRenderingModule.dll"
+        "UnityEngine.TextRenderingModule.dll",
+        "UnityEngine.UnityWebRequestModule.dll"
     )
 
     foreach ($name in $required) {

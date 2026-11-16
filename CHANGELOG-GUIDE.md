@@ -17,8 +17,8 @@ Omit empty categories. Describe the resulting behavior, not the code edits.
 2. Move the pending bullets under `## [VERSION] - YYYY-MM-DD`, newest first.
    Leave an empty `## [Unreleased]` above the new release. Use the release date.
 3. Update `GameData/Glissade3D/Glissade3D.version` and `src/AssemblyInfo.cs`
-   to the same version in the same commit. Keep a dated changelog section for
-   the current version: CI checks it on every build.
+   to the same version. Finalize the dated changelog section before tagging.
+   Branch builds preview Unreleased entries, which can be empty.
 4. Preview the notes from the mod folder:
 
    ```bash

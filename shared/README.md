@@ -25,3 +25,9 @@ Approach routes made by Glissade3D users.
 4. Add a row to the table above and open a pull request.
 
 One route per folder, no changes to other people's folders.
+
+## Maintainers
+
+Regenerate `index.cfg` after changing a route file, then commit both:
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-shared-index.ps1

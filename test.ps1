@@ -60,7 +60,12 @@ Invoke-Suite "Route tests" "RouteTests.exe" `
     -References $config
 
 Invoke-Suite "Storage tests" "StorageTests.exe" `
-    -Sources @("src\Shim.cs", "src\Log.cs", "src\ConfigIo.cs", "src\RunwayData.cs", "src\Route.cs", "src\RouteStore.cs", "src\RouteNaming.cs", "src\RouteStorage.cs", "tests\StorageTests.cs") `
+    -Sources @("src\Shim.cs", "src\Log.cs", "src\ConfigIo.cs", "src\RunwayData.cs", "src\Route.cs", "src\RouteStore.cs", "src\RouteNaming.cs", "src\RouteStorage.cs", "src\RouteMath.cs", "src\SharedHash.cs", "src\SharedCatalog.cs", "src\SharedInstallState.cs", "src\SharedInstaller.cs", "src\GatesSettings.cs", "tests\StorageTests.cs") `
     -References $config
+
+Invoke-Suite "Shared tests" "SharedTests.exe" `
+    -Sources @("src\Shim.cs", "src\Log.cs", "src\ConfigIo.cs", "src\RunwayData.cs", "src\Route.cs", "src\RouteStore.cs", "src\RouteNaming.cs", "src\RouteStorage.cs", "src\SharedCatalog.cs", "src\SharedHash.cs", "src\SharedInstallState.cs", "src\SharedInstaller.cs", "tests\SharedTests.cs") `
+    -References $config `
+    -Arguments @((Join-Path $root "shared"))
 
 Write-Host "All tests passed."

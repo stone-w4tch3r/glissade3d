@@ -29,6 +29,7 @@ static class StorageTests
             TestMigration();
             TestDuplicateId();
             TestRunwayImport();
+            TestSettingsUrl();
         }
         catch (Exception e)
         {
@@ -42,6 +43,19 @@ static class StorageTests
 
         Console.WriteLine(_failed == 0 ? "OK: all storage checks passed" : $"FAILED: {_failed}");
         return _failed == 0 ? 0 : 1;
+    }
+
+    private static void TestSettingsUrl()
+    {
+        var settings = new GatesSettings { SharedBaseUrl = "http://127.0.0.1:8765/" };
+        var node = settings.ToNode();
+        var stored = node.GetValue("sharedBaseUrl");
+        ExpectTrue("settings url is escaped", !string.IsNullOrEmpty(stored) && stored.IndexOf("//", StringComparison.Ordinal) < 0);
+        var parsed = ConfigNode.Parse(node.ToString());
+        var root = parsed.HasNode("Glissade3D") ? parsed.GetNode("Glissade3D") : parsed;
+        var loaded = new GatesSettings();
+        loaded.ApplyNode(root);
+        ExpectTrue("settings url restored", loaded.SharedBaseUrl == "http://127.0.0.1:8765/");
     }
 
     private static void TestSlug()

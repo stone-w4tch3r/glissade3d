@@ -28,7 +28,11 @@ class ReleaseNotesTests(unittest.TestCase):
 
     def test_invalid_version(self):
         with self.assertRaises(ValueError):
-            release_notes(self.section, "Unreleased")
+            release_notes(self.section, "0.3.3")
+
+    def test_unreleased_preview(self):
+        self.assertEqual(release_notes("## [Unreleased]\n\n" + self.section, "Unreleased"), "")
+        self.assertEqual(release_notes("## [Unreleased]\n\n- Pending.\n\n" + self.section, "Unreleased"), "- Pending.\n")
 
 
 if __name__ == "__main__":

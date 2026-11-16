@@ -49,7 +49,8 @@ $references = @(
     "UnityEngine.InputLegacyModule.dll",
     "UnityEngine.AnimationModule.dll",
     "UnityEngine.PhysicsModule.dll",
-    "UnityEngine.TextRenderingModule.dll"
+    "UnityEngine.TextRenderingModule.dll",
+    "UnityEngine.UnityWebRequestModule.dll"
 )
 
 $refArgs = foreach ($name in $references) { "/reference:`"$(Join-Path $managed $name)`"" }

@@ -5,6 +5,10 @@ Versions use the mod's existing four-part numbering.
 
 ## [Unreleased]
 
+### Added
+
+- Install shared routes from the mod. Uninstall keeps edited routes; matching local IDs are skipped.
+
 ## [0.3.3.0] - 2026-11-17
 
 ### Added

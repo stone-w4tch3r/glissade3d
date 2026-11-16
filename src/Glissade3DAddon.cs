@@ -1,9 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using KSP.UI.Screens;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Glissade3D;
 
@@ -56,6 +59,11 @@ public sealed class Glissade3DAddon : MonoBehaviour
     private string _toast = "";
     private float _toastUntil;
     private string _errorText = "";
+
+    private SharedInstallState _sharedState = new SharedInstallState();
+    private bool _sharedBusy;
+    private string _sharedStatus = "";
+    private bool _confirmUninstall;
 
     private MarkerVisual _marker;
     private MarkerVisual _markerA;
@@ -123,6 +131,9 @@ public sealed class Glissade3DAddon : MonoBehaviour
         _settings = GatesSettings.Load();
         Loc.Initialize();
         Dbg.Enabled = _settings.DebugLog || Environment.GetEnvironmentVariable("GLISSADE_DEBUG") == "1";
+        _sharedState = SharedInstallState.Load(SharedStatePath);
+        if (string.IsNullOrEmpty(SharedBaseUrl())) _sharedStatus = Loc.Get("shared_unconfigured");
+        Dbg.Line($"shared base='{SharedBaseUrl()}' managed={_sharedState.Count}");
         Dbg.Line($"start: angle={_settings.DefaultAngle:0.###} auto={_settings.AutoRoute} active={_settings.ActiveRouteId}");
         RouteLibrary.EnsureLoaded(_settings.DefaultAngle);
 
@@ -142,7 +153,23 @@ public sealed class Glissade3DAddon : MonoBehaviour
             Debug.Log("[Glissade3D][SMOKE] armed");
         }
 
+        if (Environment.GetEnvironmentVariable("GLISSADE_SHARED_AUTOINSTALL") == "1")
+            StartCoroutine(SharedAutoInstallSmoke());
+
         _started = true;
+    }
+
+    private IEnumerator SharedAutoInstallSmoke()
+    {
+        yield return new WaitForSeconds(3f);
+        Debug.Log($"[Glissade3D][SMOKE] shared autoinstall base='{SharedBaseUrl()}'");
+        if (string.IsNullOrEmpty(SharedBaseUrl()))
+        {
+            Debug.Log("[Glissade3D][SMOKE] shared autoinstall skipped: no base url");
+            yield break;
+        }
+        yield return StartCoroutine(InstallSharedRoutine());
+        Debug.Log($"[Glissade3D][SMOKE] shared autoinstall done status='{_sharedStatus}' managed={_sharedState.Count} routes={RouteLibrary.Routes.Count}");
     }
 
     private void OnDestroy()
@@ -1149,7 +1176,7 @@ public sealed class Glissade3DAddon : MonoBehaviour
             if (!Matches(candidate, _search)) continue;
             var selected = candidate.Id == _settings.ActiveRouteId;
             var distance = _routeDistance.TryGetValue(candidate.Id, out var cached) ? cached : 0.0;
-            var label = $"{(selected ? "> " : "   ")}{candidate.DisplayName}  {candidate.HeadingDeg:0.#}°  {distance / 1000.0:0.0} km{(candidate.BuiltIn ? "  *" : "")}";
+            var label = $"{(selected ? "> " : "   ")}{candidate.DisplayName}  {candidate.HeadingDeg:0.#}°  {distance / 1000.0:0.0} km{(_sharedState.Contains(candidate.Id) ? "  [S]" : "")}{(candidate.BuiltIn ? "  *" : "")}";
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(label))
@@ -1236,6 +1263,31 @@ public sealed class Glissade3DAddon : MonoBehaviour
             }
 
             if (GUILayout.Button(Loc.Get("read_routes"))) ReadRoutesFromDisk();
+
+            GUILayout.Space(6);
+            GUILayout.Label($"{Loc.Get("shared_routes")}: {_sharedState.Count}");
+            GUILayout.BeginHorizontal();
+            GUI.enabled = !_sharedBusy && !string.IsNullOrEmpty(SharedBaseUrl());
+            if (GUILayout.Button(Loc.Get("install_shared"))) StartCoroutine(InstallSharedRoutine());
+            GUI.enabled = !_sharedBusy && _sharedState.Count > 0;
+            if (GUILayout.Button(Loc.Get("uninstall_shared")))
+            {
+                _confirmUninstall = true;
+                _confirmDelete = false;
+            }
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
+
+            if (_sharedBusy || !string.IsNullOrEmpty(_sharedStatus)) GUILayout.Label(_sharedStatus);
+
+            if (_confirmUninstall)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(Loc.Get("shared_confirm"));
+                if (GUILayout.Button(Loc.Get("delete"))) UninstallShared();
+                if (GUILayout.Button(Loc.Get("cancel"))) _confirmUninstall = false;
+                GUILayout.EndHorizontal();
+            }
         }
 
         GUILayout.Space(4);
@@ -1754,14 +1806,120 @@ public sealed class Glissade3DAddon : MonoBehaviour
         _path = null;
         _pathFrame = -1;
         _problemsRevision = -1;
+        _sharedState = SharedInstallState.Load(SharedStatePath);
         Toast($"{Loc.Get("read_routes")}: {RouteLibrary.Routes.Count}");
         Debug.Log($"[Glissade3D] routes read from disk: {RouteLibrary.Routes.Count}");
+    }
+
+    private static string SharedStatePath => Path.Combine(KSPUtil.ApplicationRootPath, "PluginData", "Glissade3D", "shared-installed.cfg");
+
+    private string SharedBaseUrl()
+    {
+        var configured = string.IsNullOrEmpty(_settings.SharedBaseUrl)
+            ? SharedInstaller.DefaultBaseUrl
+            : _settings.SharedBaseUrl;
+        return SharedInstaller.NormalizeBaseUrl(configured);
+    }
+
+    private static string JoinUrl(string baseUrl, string relative)
+    {
+        if (!baseUrl.EndsWith("/", StringComparison.Ordinal)) baseUrl += "/";
+        return baseUrl + relative.TrimStart('/');
+    }
+
+    private static IEnumerator FetchBytes(string url, Action<byte[]> done, Action<string> fail)
+    {
+        using (var request = UnityWebRequest.Get(url))
+        {
+            request.timeout = 20;
+            yield return request.SendWebRequest();
+            if (request.isNetworkError || request.isHttpError)
+            {
+                fail(request.error);
+                yield break;
+            }
+            done(request.downloadHandler.data);
+        }
+    }
+
+    private IEnumerator InstallSharedRoutine()
+    {
+        _sharedBusy = true;
+        _confirmUninstall = false;
+        _sharedStatus = Loc.Get("shared_working");
+
+        var baseUrl = SharedBaseUrl();
+        var catalog = (SharedCatalog)null;
+        var files = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        var error = "";
+        Debug.Log($"[Glissade3D] shared install from {baseUrl}");
+
+        if (string.IsNullOrEmpty(baseUrl))
+        {
+            error = Loc.Get("shared_unconfigured");
+        }
+        else
+        {
+            byte[] manifest = null;
+            yield return FetchBytes(JoinUrl(baseUrl, SharedInstaller.ManifestName), bytes => manifest = bytes, message => error = message);
+            if (manifest != null && string.IsNullOrEmpty(error))
+                catalog = SharedCatalog.Parse(Encoding.UTF8.GetString(manifest), out error);
+
+            if (catalog != null)
+            {
+                var index = 0;
+                foreach (var entry in catalog.Entries)
+                {
+                    index++;
+                    _sharedStatus = $"{Loc.Get("shared_working")} {index}/{catalog.Entries.Count}";
+                    byte[] bytes = null;
+                    yield return FetchBytes(JoinUrl(baseUrl, entry.File), data => bytes = data, message => error = message);
+                    if (bytes == null || !string.IsNullOrEmpty(error)) break;
+                    files[entry.File] = bytes;
+                }
+            }
+        }
+
+        if (catalog != null && string.IsNullOrEmpty(error) && files.Count == catalog.Entries.Count)
+        {
+            var result = SharedInstaller.Install(catalog, files, RouteLibrary.Storage, RouteLibrary.Routes, _sharedState, SharedStatePath);
+            foreach (var note in result.Notes) Debug.Log("[Glissade3D] shared: " + note);
+            _sharedStatus = string.Format(Loc.Get("shared_result"), result.Installed, result.Updated, result.UpToDate + result.Skipped + result.Failed);
+            RouteLibrary.Reload(_settings.DefaultAngle);
+            RefreshBodyRoutes();
+            _path = null;
+            _pathFrame = -1;
+            Debug.Log($"[Glissade3D] shared install: installed={result.Installed} updated={result.Updated} skipped={result.Skipped} failed={result.Failed}");
+        }
+        else
+        {
+            _sharedStatus = string.IsNullOrEmpty(error) ? Loc.Get("shared_failed") : Loc.Get("shared_failed") + ": " + error;
+            Debug.LogWarning("[Glissade3D] shared install failed: " + error);
+        }
+
+        _sharedState = SharedInstallState.Load(SharedStatePath);
+        _sharedBusy = false;
+    }
+
+    private void UninstallShared()
+    {
+        _confirmUninstall = false;
+        var result = SharedInstaller.Uninstall(RouteLibrary.Storage, RouteLibrary.Routes, _sharedState, SharedStatePath);
+        foreach (var note in result.Notes) Debug.Log("[Glissade3D] shared: " + note);
+        _sharedStatus = string.Format(Loc.Get("shared_removed"), result.Removed, result.KeptModified);
+        RouteLibrary.Reload(_settings.DefaultAngle);
+        RefreshBodyRoutes();
+        _path = null;
+        _pathFrame = -1;
+        _sharedState = SharedInstallState.Load(SharedStatePath);
+        Debug.Log($"[Glissade3D] shared uninstall: removed={result.Removed} kept={result.KeptModified} failed={result.Failed}");
     }
 
     private void CloseMainWindow()
     {
         _settings.ShowWindow = false;
         _rebinding = false;
+        _confirmUninstall = false;
         if (_launcher != null) _launcher.SetFalse(false);
         _settingsDirty = false;
         _settings.Save();
@@ -1785,6 +1943,7 @@ public sealed class Glissade3DAddon : MonoBehaviour
             {
                 case 0:
                     StorageSmoke();
+                    SharedSmoke();
                     Debug.Log($"[Glissade3D][SMOKE] routes={RouteLibrary.Routes.Count} body={_bodyName}");
                     if (RouteLibrary.Routes.Count == 0) Fail("no routes loaded");
                     break;
@@ -1939,6 +2098,92 @@ public sealed class Glissade3DAddon : MonoBehaviour
         }
 
         _smokeStep++;
+    }
+
+    private void SharedSmoke()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "glissade-shared-smoke-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(dir);
+            var route = new Route
+            {
+                Id = "5h4r3d000001",
+                Name = "Shared smoke",
+                Body = "Kerbin",
+                Lat = -0.05,
+                Lon = 285.3,
+                AltMsl = 70,
+                HeadingDeg = 90,
+                AngleDeg = 3,
+                MinDistance = 250f,
+                MaxDistance = 5000f,
+                Spacing = 500f,
+                Width = 40f,
+                Height = 20f,
+                EndWidth = 20f,
+                EndHeight = 10f,
+                TaperDistance = 400f
+            };
+
+            var file = Path.Combine(dir, "route.cfg");
+            var wrapper = new ConfigNode("GlissadeRoutes");
+            var node = new ConfigNode("Route");
+            route.WriteTo(node);
+            wrapper.AddNode(node);
+            if (!ConfigIo.Save(wrapper, file, true, out var writeError))
+            {
+                Fail("shared smoke write: " + writeError);
+                return;
+            }
+
+            var bytes = File.ReadAllBytes(file);
+            var manifest = "SharedRoutes\n{\n    version = 1\n    Entry\n    {\n" +
+                           $"        id = {route.Id}\n        name = {route.Name}\n        file = route.cfg\n" +
+                           $"        sha256 = {SharedHash.Bytes(bytes)}\n" +
+                           "    }\n}\n";
+            var catalog = SharedCatalog.Parse(manifest, out var parseError);
+            if (catalog == null)
+            {
+                Fail("shared smoke catalog: " + parseError);
+                return;
+            }
+
+            var storage = new RouteStorage(dir);
+            var routes = new List<Route>();
+            var statePath = Path.Combine(dir, "shared-installed.cfg");
+            var files = new Dictionary<string, byte[]> { { "route.cfg", bytes } };
+            var install = SharedInstaller.Install(catalog, files, storage, routes, new SharedInstallState(), statePath);
+            if (install.Installed != 1 || install.Failed != 0)
+            {
+                Fail("shared smoke install");
+                return;
+            }
+
+            var loaded = storage.Load(_settings.DefaultAngle);
+            if (loaded.Routes.Count != 1)
+            {
+                Fail("shared smoke load");
+                return;
+            }
+
+            var uninstall = SharedInstaller.Uninstall(storage, loaded.Routes, SharedInstallState.Load(statePath), statePath);
+            if (uninstall.Removed != 1)
+            {
+                Fail("shared smoke uninstall");
+                return;
+            }
+
+            Debug.Log("[Glissade3D][SMOKE] shared ok");
+        }
+        catch (Exception e)
+        {
+            Fail("shared smoke: " + e.GetType().Name + ": " + e.Message);
+        }
+        finally
+        {
+            try { Directory.Delete(dir, true); } catch { }
+        }
     }
 
     private void StorageSmoke()

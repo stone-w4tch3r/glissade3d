@@ -24,7 +24,7 @@ public static class RouteLibrary
 
     public static string RoutesDirectory => Storage.RoutesDirectory;
 
-    private static RouteStorage Storage => _storage ??= new RouteStorage(PluginDir);
+    public static RouteStorage Storage => _storage ??= new RouteStorage(PluginDir);
 
     public static void EnsureLoaded(double defaultAngle)
     {

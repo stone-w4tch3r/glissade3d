@@ -30,6 +30,7 @@ public sealed class GatesSettings
     public bool Advanced;
     public bool DebugLog;
     public KeyCode ToggleKey = KeyCode.Y;
+    public string SharedBaseUrl = "";
 
     public bool ShowWindow;
     public float WindowX = 260f;
@@ -53,30 +54,7 @@ public sealed class GatesSettings
             var file = ConfigIo.Load(FilePath);
             if (file == null) return settings;
             var node = file.HasNode("Glissade3D") ? file.GetNode("Glissade3D") : file;
-
-            settings.ActiveRouteId = Text(node, "activeRouteId", settings.ActiveRouteId);
-            settings.AutoRoute = ReadBool(node, "autoRoute", settings.AutoRoute);
-            settings.DefaultAngle = ReadDouble(node, "defaultAngle", ReadDouble(node, "angleDeg", settings.DefaultAngle));
-            settings.DefaultAngle = Math.Max(RouteMath.MinAngle, Math.Min(RouteMath.MaxAngle, settings.DefaultAngle));
-            settings.DefaultSpacing = (float)ReadDouble(node, "defaultSpacing", ReadDouble(node, "spacing", settings.DefaultSpacing));
-            settings.DefaultWidth = (float)ReadDouble(node, "defaultWidth", ReadDouble(node, "width", settings.DefaultWidth));
-            settings.DefaultHeight = (float)ReadDouble(node, "defaultHeight", ReadDouble(node, "height", settings.DefaultHeight));
-            settings.DefaultMinDistance = (float)ReadDouble(node, "defaultMinDistance", ReadDouble(node, "minDistance", settings.DefaultMinDistance));
-            settings.DefaultMaxDistance = (float)ReadDouble(node, "defaultMaxDistance", ReadDouble(node, "maxDistance", settings.DefaultMaxDistance));
-            settings.DefaultTaperDistance = (float)ReadDouble(node, "defaultTaperDistance", settings.DefaultTaperDistance);
-            settings.DefaultEndWidth = (float)ReadDouble(node, "defaultEndWidth", settings.DefaultWidth);
-            settings.DefaultEndHeight = (float)ReadDouble(node, "defaultEndHeight", settings.DefaultHeight);
-
-            settings.ShowGates = ReadBool(node, "showGates", settings.ShowGates);
-            settings.HideWhenLanded = ReadBool(node, "hideWhenLanded", settings.HideWhenLanded);
-            settings.Advanced = ReadBool(node, "advanced", settings.Advanced);
-            settings.DebugLog = ReadBool(node, "debugLog", settings.DebugLog);
-            settings.ToggleKey = ReadKey(node, "toggleKey", settings.ToggleKey);
-
-            settings.WindowX = (float)ReadDouble(node, "windowX", settings.WindowX);
-            settings.WindowY = (float)ReadDouble(node, "windowY", settings.WindowY);
-            settings.EditorX = (float)ReadDouble(node, "editorX", settings.EditorX);
-            settings.EditorY = (float)ReadDouble(node, "editorY", settings.EditorY);
+            settings.ApplyNode(node);
 
             Debug.Log($"[Glissade3D] settings loaded: angle={settings.DefaultAngle} auto={settings.AutoRoute} active={settings.ActiveRouteId} debug={settings.DebugLog}");
         }
@@ -87,7 +65,35 @@ public sealed class GatesSettings
         return settings;
     }
 
-    public void Save()
+    public void ApplyNode(ConfigNode node)
+    {
+        ActiveRouteId = Text(node, "activeRouteId", ActiveRouteId);
+        AutoRoute = ReadBool(node, "autoRoute", AutoRoute);
+        DefaultAngle = ReadDouble(node, "defaultAngle", ReadDouble(node, "angleDeg", DefaultAngle));
+        DefaultAngle = Math.Max(RouteMath.MinAngle, Math.Min(RouteMath.MaxAngle, DefaultAngle));
+        DefaultSpacing = (float)ReadDouble(node, "defaultSpacing", ReadDouble(node, "spacing", DefaultSpacing));
+        DefaultWidth = (float)ReadDouble(node, "defaultWidth", ReadDouble(node, "width", DefaultWidth));
+        DefaultHeight = (float)ReadDouble(node, "defaultHeight", ReadDouble(node, "height", DefaultHeight));
+        DefaultMinDistance = (float)ReadDouble(node, "defaultMinDistance", ReadDouble(node, "minDistance", DefaultMinDistance));
+        DefaultMaxDistance = (float)ReadDouble(node, "defaultMaxDistance", ReadDouble(node, "maxDistance", DefaultMaxDistance));
+        DefaultTaperDistance = (float)ReadDouble(node, "defaultTaperDistance", DefaultTaperDistance);
+        DefaultEndWidth = (float)ReadDouble(node, "defaultEndWidth", DefaultWidth);
+        DefaultEndHeight = (float)ReadDouble(node, "defaultEndHeight", DefaultHeight);
+
+        ShowGates = ReadBool(node, "showGates", ShowGates);
+        HideWhenLanded = ReadBool(node, "hideWhenLanded", HideWhenLanded);
+        Advanced = ReadBool(node, "advanced", Advanced);
+        DebugLog = ReadBool(node, "debugLog", DebugLog);
+        ToggleKey = ReadKey(node, "toggleKey", ToggleKey);
+        SharedBaseUrl = SharedInstaller.DecodeBaseUrl(Text(node, "sharedBaseUrl", ""));
+
+        WindowX = (float)ReadDouble(node, "windowX", WindowX);
+        WindowY = (float)ReadDouble(node, "windowY", WindowY);
+        EditorX = (float)ReadDouble(node, "editorX", EditorX);
+        EditorY = (float)ReadDouble(node, "editorY", EditorY);
+    }
+
+    public ConfigNode ToNode()
     {
         var node = new ConfigNode("Glissade3D");
         node.AddValue("activeRouteId", ActiveRouteId ?? "");
@@ -106,10 +112,17 @@ public sealed class GatesSettings
         node.AddValue("advanced", Advanced.ToString());
         node.AddValue("debugLog", DebugLog.ToString());
         node.AddValue("toggleKey", ToggleKey.ToString());
+        node.AddValue("sharedBaseUrl", SharedInstaller.EncodeBaseUrl(SharedBaseUrl));
         node.AddValue("windowX", Num(WindowX));
         node.AddValue("windowY", Num(WindowY));
         node.AddValue("editorX", Num(EditorX));
         node.AddValue("editorY", Num(EditorY));
+        return node;
+    }
+
+    public void Save()
+    {
+        var node = ToNode();
 
         if (ConfigIo.Save(node, FilePath, out _))
         {
