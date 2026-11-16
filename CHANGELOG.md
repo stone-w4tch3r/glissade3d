@@ -5,6 +5,12 @@ Versions use the mod's existing four-part numbering.
 
 ## [Unreleased]
 
+## [0.3.5.1] - 2026-11-17
+
+### Changed
+
+- Replace "route" with "trajectory" in user-facing docs and UI.
+
 ## [0.3.5.0] - 2026-11-17
 
 ### Added
@@ -19,13 +25,13 @@ Versions use the mod's existing four-part numbering.
 
 ### Added
 
-- Install shared routes from the mod github.
+- Install shared trajectories from the mod github.
 
 ## [0.3.3.0] - 2026-11-17
 
 ### Added
 
 - 3D approach gates. No autopilot.
-- Route editor: point, heading, slope, two-point setup, world picking.
-- Save, copy, import, export and share routes.
+- Trajectory editor: point, heading, slope, two-point setup, world picking.
+- Save, copy, import, export and share trajectories.
 - Stock runways, optional NavUtilities import, nine languages.

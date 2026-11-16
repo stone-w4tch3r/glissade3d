@@ -7,17 +7,17 @@ included.
 <table width="100%">
   <tr>
     <th width="50%">Approach gates</th>
-    <th width="50%">Route editor</th>
+    <th width="50%">Trajectory editor</th>
   </tr>
   <tr>
     <td width="50%"><img src="screenshots/gates.jpg" width="100%" alt="Green gates on approach to KSC"></td>
-    <td width="50%"><img src="screenshots/editing-simple-track.jpg" width="100%" alt="Editing a route in the Glissade3D editor"></td>
+    <td width="50%"><img src="screenshots/editing-simple-track.jpg" width="100%" alt="Editing a trajectory in the Glissade3D editor"></td>
   </tr>
 </table>
 
 ## Fly an approach
 
-Open the mod menu via the green gate icon in the toolbar. Pick a route or leave
+Open the mod menu via the green gate icon in the toolbar. Pick a trajectory or leave
 **Auto (nearest)** enabled, then press **Y** to show or hide the gates.
 
 Runways come with the mod (KSC, Island Airfield, KSC2) and any NavUtilities
@@ -26,8 +26,8 @@ runway definitions you have installed. They are read-only: to change one,
 
 ## Editing and Creating Glissades
 
-**New route** starts a route at your current position and opens the editor.
-Double-click a route in the list, or press **Edit**, to change one of your own.
+**New trajectory** starts a trajectory at your current position and opens the editor.
+Double-click a trajectory in the list, or press **Edit**, to change one of your own.
 
 - **Point** — manually edit coordinates;
   press **Click** and pick a spot in the world; drag the marker's ground ring or
@@ -39,18 +39,18 @@ Double-click a route in the list, or press **Edit**, to change one of your own.
 - **Advanced** — gate range, spacing, entry size, pinch size and taper length.
 - **Pause** freezes the world so you can look around.
 
-Routes live in `PluginData/Glissade3D/routes/`, one file per route.
+Trajectories live in `PluginData/Glissade3D/routes/`, one file per trajectory.
 
 ## Sharing Trajectories
 
-Ready-made routes are in [shared/](shared/README.md). To share one, copy your
-route file from `PluginData/Glissade3D/routes/` into
-`shared/<kebab-case-name>/<route-name>.cfg`, add a small README and an optional
+Ready-made trajectories are in [shared/](shared/README.md). To share one, copy your
+trajectory file from `PluginData/Glissade3D/routes/` into
+`shared/<kebab-case-name>/<trajectory-name>.cfg`, add a small README and an optional
 screenshot, and open a pull request.
 
-## Install Shared Routes From Github
+## Install Shared Trajectories From Github
 
-Under **Advanced**, **Install shared routes** downloads the published catalog
+Under **Advanced**, **Install shared trajectories** downloads the published catalog
 from github; they are marked `↓` in the list.
 
 ## Install & compatibility
@@ -61,7 +61,7 @@ restart the game.
 - **KSP 1.12.5.** Other versions are unverified.
 - **No dependencies.** NavUtilities is an optional companion.
 - **NavUtilities support:** its runway definitions and `customRunways.cfg` are
-  imported as read-only routes; angles do not sync between mods.
+  imported as read-only trajectories; angles do not sync between mods.
 - **Languages:** all nine stock languages (En, Ru, De, Fr, Es, It, Pt, Ja, Zh).
 
 ## Configuration

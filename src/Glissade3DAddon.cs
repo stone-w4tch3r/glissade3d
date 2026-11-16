@@ -1177,7 +1177,7 @@ public sealed class Glissade3DAddon : MonoBehaviour
         GUILayout.BeginHorizontal();
         GUILayout.Label(Loc.Get("search"), GUILayout.Width(60f));
         _search = GUILayout.TextField(_search ?? "");
-        if (GUILayout.Button(Loc.Get("new_route"), GUILayout.Width(120f))) CreateRoute();
+        if (GUILayout.Button(Loc.Get("new_route"), GUILayout.Width(160f))) CreateRoute();
         GUILayout.EndHorizontal();
 
         _scroll = GUILayout.BeginScrollView(_scroll, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(150f));
@@ -1289,7 +1289,6 @@ public sealed class Glissade3DAddon : MonoBehaviour
 
             GUILayout.Space(6);
             GUILayout.Label($"{Loc.Get("shared_routes")}: {_sharedState.Count}");
-            GUILayout.BeginHorizontal();
             GUI.enabled = !_sharedBusy && !string.IsNullOrEmpty(SharedBaseUrl());
             if (GUILayout.Button(Loc.Get("install_shared"))) StartCoroutine(InstallSharedRoutine());
             GUI.enabled = !_sharedBusy && _sharedState.Count > 0;
@@ -1299,14 +1298,13 @@ public sealed class Glissade3DAddon : MonoBehaviour
                 _confirmDelete = false;
             }
             GUI.enabled = true;
-            GUILayout.EndHorizontal();
 
             if (_sharedBusy || !string.IsNullOrEmpty(_sharedStatus)) GUILayout.Label(_sharedStatus);
 
             if (_confirmUninstall)
             {
-                GUILayout.BeginHorizontal();
                 GUILayout.Label(Loc.Get("shared_confirm"));
+                GUILayout.BeginHorizontal();
                 if (GUILayout.Button(Loc.Get("delete"))) UninstallShared();
                 if (GUILayout.Button(Loc.Get("cancel"))) _confirmUninstall = false;
                 GUILayout.EndHorizontal();
