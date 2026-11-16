@@ -5,12 +5,17 @@ Versions use the mod's existing four-part numbering.
 
 ## [Unreleased]
 
+## [0.3.5.2] - 2026-11-17
+
+### Fixed
+
+- Use the public GitHub catalog as the default source of shared trajectories.
+
 ## [0.3.5.1] - 2026-11-17
 
 ### Changed
 
 - Use trajectory in the interface and docs.
-- Use the public GitHub catalog as the default source of shared trajectories.
 
 ## [0.3.5.0] - 2026-11-17
 

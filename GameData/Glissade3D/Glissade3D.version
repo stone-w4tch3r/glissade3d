@@ -1,6 +1,6 @@
 {
   "NAME": "Glissade3D",
   "URL": "https://github.com/stone-w4tch3r/glissade3d",
-  "VERSION": { "MAJOR": 0, "MINOR": 3, "PATCH": 5, "BUILD": 1 },
+  "VERSION": { "MAJOR": 0, "MINOR": 3, "PATCH": 5, "BUILD": 2 },
   "KSP_VERSION": { "MAJOR": 1, "MINOR": 12, "PATCH": 5 }
 }
