@@ -51,12 +51,16 @@ $zipPath = Join-Path $root "dist\Glissade3D-$version.zip"
 $zip = [IO.Compression.ZipFile]::OpenRead($zipPath)
 try {
     $gameData = Join-Path $root "GameData\Glissade3D"
-    $expected = @("GameData/Glissade3D/LICENSE.md")
+    $expected = @("GameData/Glissade3D/LICENSE.md", "GameData/Glissade3D/Plugins/Glissade3D.dll")
     $expected += @(Get-ChildItem -LiteralPath $gameData -File -Recurse | ForEach-Object {
         "GameData/Glissade3D/" + $_.FullName.Substring($gameData.Length + 1).Replace('\', '/')
     })
     $files = @($zip.Entries | Where-Object { $_.Name } | ForEach-Object { $_.FullName })
-    if (Compare-Object $expected $files) { Fail "ZIP file list does not match the release layout." }
+    $difference = Compare-Object $expected $files
+    if ($difference) {
+        $difference | Format-Table -AutoSize | Out-Host
+        Fail "ZIP file list does not match the release layout. => ZIP only; <= expected only."
+    }
     foreach ($entry in $zip.Entries) {
         if ($entry.Name -and $entry.Length -eq 0) { Fail "Empty release file: $($entry.FullName)" }
     }
