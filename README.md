@@ -4,13 +4,7 @@ Fly a trail of green gates to a point you chose. Glissade3D draws a 3D approach
 path, and lets you create, edit and share your own glissades. No autopilot
 included.
 
-<style>
-.glissade-row { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 12px 0; }
-.glissade-row td { width: 50%; padding: 0; vertical-align: top; }
-.glissade-row img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: contain; }
-</style>
-
-<table class="glissade-row" width="100%">
+<table width="100%">
   <tr>
     <th width="50%">Approach gates</th>
     <th width="50%">Route editor</th>
