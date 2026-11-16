@@ -9,7 +9,8 @@ Versions use the mod's existing four-part numbering.
 
 ### Changed
 
-- Replace "route" with "trajectory" in user-facing docs and UI.
+- Use trajectory in the interface and docs.
+- Use the public GitHub catalog as the default source of shared trajectories.
 
 ## [0.3.5.0] - 2026-11-17
 

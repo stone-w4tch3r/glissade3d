@@ -37,7 +37,7 @@ public static class SharedInstaller
     public const string ManifestName = "index.cfg";
 
     /// <summary>Set when the public route repository is published.</summary>
-    public const string DefaultBaseUrl = "";
+    public const string DefaultBaseUrl = "https://raw.githubusercontent.com/stone-w4tch3r/glissade3d/main/shared/";
 
     /// <summary>
     /// ConfigNode treats // as a comment, so a URL cannot be stored raw in a cfg.

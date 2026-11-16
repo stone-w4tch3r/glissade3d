@@ -55,6 +55,7 @@ try {
     $expected += @(Get-ChildItem -LiteralPath $gameData -File -Recurse | ForEach-Object {
         "GameData/Glissade3D/" + $_.FullName.Substring($gameData.Length + 1).Replace('\', '/')
     })
+    $expected = @($expected | Select-Object -Unique)
     $files = @($zip.Entries | Where-Object { $_.Name } | ForEach-Object { $_.FullName })
     $difference = Compare-Object $expected $files
     if ($difference) {
