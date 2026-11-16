@@ -1,0 +1,12 @@
+# Build output and downloaded compiler.
+/dist/
+/.tools/
+
+# Local game files, logs and editor files.
+*.dll
+*.pdb
+*.log
+.DS_Store
+Thumbs.db
+/.vscode/
+/.idea/
