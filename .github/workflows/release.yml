@@ -5,12 +5,19 @@ on:
     branches: [main]
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      spacedock_tag:
+        description: 'Mirror an existing GitHub release to SpaceDock; leave empty for build only'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   build:
+    if: github.event_name != 'workflow_dispatch' || inputs.spacedock_tag == ''
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -51,3 +58,25 @@ jobs:
           gh release create "$RELEASE_TAG" dist/*.zip
           --verify-tag --title "Glissade3D $RELEASE_TAG"
           --notes-file dist/RELEASE_NOTES.md
+
+  spacedock:
+    needs: release
+    if: always() && (needs.release.result == 'success' || (github.event_name == 'workflow_dispatch' && inputs.spacedock_tag != ''))
+    runs-on: windows-2022
+    concurrency:
+      group: spacedock-publish
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Mirror published GitHub release
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.spacedock_tag || github.ref_name }}
+          SPACEDOCK_MOD_ID: ${{ vars.SPACEDOCK_MOD_ID }}
+          SPACEDOCK_USERNAME: ${{ secrets.SPACEDOCK_USERNAME }}
+          SPACEDOCK_PASSWORD: ${{ secrets.SPACEDOCK_PASSWORD }}
+        run: ./publish-spacedock.ps1 -Tag $env:RELEASE_TAG

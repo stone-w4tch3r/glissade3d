@@ -104,7 +104,7 @@ The ZIP contains the `GameData` folder.
 
 Each push to public `main` builds a ZIP and uploads it as the `Glissade3D`
 Actions artifact. You can also select **Run workflow** on the Actions page.
-These runs do not publish a release.
+With no input, these runs do not publish a release.
 
 CI uses Windows Server 2022, Roslyn 4.14.0 and pinned, checksum-verified
 [KSP 1.12.5 reference assemblies](https://github.com/KSPModdingLibs/KSPLibs).
@@ -117,7 +117,26 @@ To publish a release, sync the tested source and push an annotated `v<version>`
 tag on the public commit. The tag must match both version files. The tagged
 commit must belong to public `main`. Successful tag builds publish the ZIP
 directly as a GitHub release, with the matching section from `CHANGELOG.md`.
-Manual runs never publish, even when you select a tag.
+After GitHub publication, a separate job mirrors the same ZIP and release notes
+to SpaceDock. It reads KSP compatibility from the ZIP's `.version` file.
+
+Set repository secrets `SPACEDOCK_USERNAME` and `SPACEDOCK_PASSWORD`, and the
+repository variable `SPACEDOCK_MOD_ID` (`4847` for Glissade3D), in the public
+repository. Keep credentials out of source files and command arguments.
+
+To mirror an existing release or retry SpaceDock alone:
+
+```bash
+gh workflow run release.yml --repo stone-w4tch3r/glissade3d \
+  --ref main -f spacedock_tag=v0.3.5.2
+```
+
+Replace the tag with the published version. This skips rebuilding and GitHub
+publication. Existing SpaceDock versions are accepted only when the ZIP hash
+and KSP compatibility match GitHub. Conflicts fail without replacing files.
+A new SpaceDock upload notifies followers. A failed mirror leaves GitHub intact;
+rerun the failed job or use the command above. Manual runs never create GitHub
+releases, but the `spacedock_tag` input explicitly publishes to SpaceDock.
 
 Use a new version for each release; do not move published tags or replace
 published ZIPs.

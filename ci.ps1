@@ -6,6 +6,7 @@ $root = $PSScriptRoot
 $version = Get-ModVersion $root "Glissade3D"
 Assert-VersionMatch $root $version
 & (Join-Path $root "tests\ReleaseNotesTests.ps1")
+& (Join-Path $root "tests\SpaceDockTests.ps1")
 # Validate notes before the build; packaging clears dist, so write them afterwards.
 $notesVersion = if ($env:GITHUB_REF_TYPE -eq "tag") { $version } else { "Unreleased" }
 & (Join-Path $root "release-notes.ps1") -Version $notesVersion
