@@ -5,6 +5,12 @@ Versions use the mod's existing four-part numbering.
 
 ## [Unreleased]
 
+## [0.3.5.3] - 2026-11-17
+
+### Changed
+
+- Exercise GitHub and SpaceDock release automation. No gameplay changes.
+
 ## [0.3.5.2] - 2026-11-17
 
 ### Fixed
